@@ -42,5 +42,5 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     self.wfile.flush()
     self.connection.shutdown(1)
 
-bhs = BaseHTTPServer.HTTPServer(('', 8000), MyHandler)
+bhs = BaseHTTPServer.HTTPServer(('', 4242), MyHandler)
 bhs.serve_forever()

@@ -15,7 +15,7 @@ function genMetricQuery(metric, tags, conf) {
 	}
 	query += ":"+metric;
 	first = true;
-	for tagName in tags {
+	for (tagName in tags) {
 		if (first) {
 			query += "{";
 			first = false;
@@ -83,7 +83,7 @@ function getClusterView(startTime, endTime, conf) {
 function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
 	var uri = genViewFunc(startTime, endTime, conf);
 	$.getJSON(uri, function(data) {
-        $.plot($(plotdiv), [ data["data"], {
+        $.plot($(plotdiv), data["data"], {
             series: {
             stack: false,
             lines: { show: true, fill: true, steps: false},
@@ -92,3 +92,5 @@ function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
         })
     });
 }
+
+

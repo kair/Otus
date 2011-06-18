@@ -3,7 +3,8 @@
  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Flot Examples</title>
-    <link href="layout.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" type="text/css" href="../lib/jcalendar/css/jscal2.css" />
+    <link rel="stylesheet" type="text/css" href="../lib/jcalendar/css/border-radius.css" />    
     <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../excanvas.min.js"></script><![endif]-->
     <script language="javascript" type="text/javascript" src="../lib/flot/jquery.js"></script>
     <script language="javascript" type="text/javascript" src="../lib/flot/jquery.flot.js"></script>
@@ -12,7 +13,6 @@
  	<script language="javascript" type="text/javascript" src="../lib/tsd/query.js"></script>
  </head>
  <body>
- 	{% block timeselection %}
     From <input size="20" id="cs" name="cs" value={{ cs }}/><button id="cs_btn" type="button">...</button>
     To   <input size="20" id="ce" name="ce" value={{ ce }}/><button id="ce_btn" type="button">...</button>
     <script type="text/javascript">//<![CDATA[
@@ -24,7 +24,7 @@
       cal.manageFields("cs_btn", "cs", "%b %d %Y %H:%M");
       cal.manageFields("ce_btn", "ce", "%b %d %Y %H:%M");
     //]]></script>
-    {% endblock %}
+	<button type="button" onclick=freshTime()> Go </button>
      	
     <h1>Cluster Overview</h1>
 
@@ -34,9 +34,13 @@
 
     <div id="nodeview" style="font-size:150%;width:800px;height:300px;"></div>
 
+	<p id="test_area"> Empty </p>
+	
     <script type="text/javascript">
-      $.renderView();
-	 </script>
+    	function freshTime() {
+    		$("#test_area").html($("#cs").value);		
+    	}
+    </script>
 
  </body>
 </html>
