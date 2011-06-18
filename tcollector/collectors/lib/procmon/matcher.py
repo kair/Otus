@@ -105,9 +105,8 @@ class SubtreeMatcher:
       for j in range(0, len(self.modules)):
         module = self.modules[j]
         for k in range(0, module.size()):
-          name = module.names()[k]
-          types = "proc=%s %s "%(self.rules[i][self.RULE_IND_NAME], \
-            module.types()[k])
+          name = module.naming()[k]
+          types = "proc=%s %s "%(self.rules[i][self.RULE_IND_NAME])
           value = self.results[i].get(j, k)
           reporter.report(name, timestamp, value, types)
 
@@ -120,7 +119,7 @@ class SubtreeMatcher:
       for j in range(0, len(self.modules)):
         module = self.modules[j]
         for k in range(0, module.size()):
-          name = "%s.%s"%(self.rules[i][self.RULE_IND_NAME], module.names()[k])
+          name = "%s.%s"%(self.rules[i][self.RULE_IND_NAME], module.naming()[k])
           names.append(str(name))
     return names
 
