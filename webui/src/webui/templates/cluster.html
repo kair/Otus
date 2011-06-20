@@ -38,12 +38,6 @@
 
     <div id="clusterview" style="font-size:150%;width:800px;height:300px;"></div>
     
-    <h1>Node Overview</h1>
-    Node ID <input type="text" size="20" id="nodeid" name="nodeid"/>
-	<button type="button"> Go </button>
-
-    <div id="nodeview" style="font-size:150%;width:800px;height:300px;"></div>
-
     <script type="text/javascript">
     	function freshTime() {
     		$("#test_area").html($("#cs").val()+$("#ce").val());
@@ -78,18 +72,6 @@
     	conf.proclist = [];
     	conf.joblist = [];
     	renderView($("#cs").val(), $("#ce").val(), getClusterView, conf, "#clusterview");
-    	
-
-    	// Initialize node view
-    	var conf = new Object();
-    	conf.metric = "cpu_user_time";
-    	conf.aggfunc = "sum";
-    	conf.isRate = false;
-    	conf.downSampe = null;
-    	conf.proclist = [];
-    	conf.joblist = [];
-    	conf.hostid = "cloud1";
-    	renderView($("#cs").val(), $("#ce").val(), getNodeView, conf, "#nodeview");
     	
     </script>
  </body>

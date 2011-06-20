@@ -4,10 +4,9 @@ from constant import *
 def getCmdLine(pid):
   try:
     f = open(PATH.PROCPID_CMDLINE%(pid), 'r');
-    ret = ""
-    for l in f: 
-      ret = ret + l
+    lines = f.readlines()
     f.close()
+    ret = ''.join(lines)
   except:
     return ''
   return ret
