@@ -14,6 +14,8 @@
 	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.cursor.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.dateAxisRenderer.min.js"></script>
 	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.highlighter.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.canvasTextRenderer.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.canvasAxisLabelRenderer.min.js"></script>		
     <script language="javascript" type="text/javascript" src="../lib/jcalendar/js/jscal2.js"></script>
 	<script language="javascript" type="text/javascript" src="../lib/jcalendar/js/lang/en.js"></script>
  	<script language="javascript" type="text/javascript" src="../lib/tsd/configuration.js"></script>		
@@ -47,7 +49,7 @@
     	// Initialize jobid suggestion
 
     	$("#metric").autocomplete( {
-    		source: ["cpu_user", "cpu_system", "vmrss", "vmsize", "readbytesrate", "writebytesrate"]
+    		source: MetricList
     	});
     	
      	$("#hostid").autocomplete( {

@@ -27,7 +27,7 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     print queryName
 
     if (queryName == '/q'):
-      f = open("./data3.json", "r")
+      f = open("./data2.json", "r")
       text = ''
       for l in f:
         text += l

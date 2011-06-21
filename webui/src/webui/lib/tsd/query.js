@@ -154,42 +154,95 @@ function getLabel(data) {
 	return labels;
 }
 
+function getMaxDataPoint(data) {
+	var max = 0;
+	for (var i = 0; i < data.length; ++i) {
+		for (var j = 0; j < data[i]['data'].length; ++j) {
+			if (data[i]['data'][j][1] > max) {
+				max = data[i]['data'][j][1];
+			}
+		}
+	}
+	return max;
+}
+
+function getAxisMax(max) {
+	var base = Math.exp(Math.floor(Math.log(max) / Math.LN10) * Math.LN10);
+	return Math.ceil(max / base) * base;
+}
+
+function unitFormatter(format, val) {
+	if (typeof val == 'number' && val > 0) { 
+		if (val >= 1) {
+			var units = ['', 'K', 'M', 'G', 'T', 'P'];
+			var nunit = Math.floor(Math.log(val) / Math.LN10 / 3) ;
+			var base = Math.exp(nunit * 3 * Math.LN10);
+			return $.jqplot.sprintf("%.1f"+units[nunit], val / base);
+		} else { 
+			var units = ['', 'm', 'μ', 'n'];
+			var nunit = Math.ceil(Math.log(val) / Math.LN10 / 3) ;
+			var base = Math.exp(nunit * 3 * Math.LN10);
+			return $.jqplot.sprintf("%.1f"+units[-nunit], val / base);			
+		}
+	} else {
+		return $.jqplot.sprintf("%.1f", val);
+	}
+}
+
 function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
 	var ret = genViewFun(startTime, endTime, conf);
-	alert(ret.uri);
-	$.getJSON(ret.uri, function(response) {
-		var datalist = new Array();
-		for (var i = 0; i < response['data'].length; ++i) {
-			datalist.push(response['data'][i]['data']);
-		}
-		var labels = getLabel(response['data']);
-        $.jqplot(plotdiv, datalist, {
-   			seriesDefaults: {showMarker:false, showLabel: true},
-   			series: labels, 
-   		 	cursor: {
-        		show: true,
-        		tooltipLocation:'sw', 
-        		zoom:true
-      		}, 
-      		legend: {
-      			show: true
-      		},
-      		highlighter: {
-        		show: true,
-        		sizeAdjust: 7.5
-      		},      		
-          	axes: {
-          		xaxis: { 
-          			renderer: $.jqplot.DateAxisRenderer,
-          			tickOptions:{formatString:'%H:%M:%S'},
-          			min: startTime,
-          			max: endTime 
-          		},
-          		yaxis: {
-          			min: 0,
-          			autoscale: true
-          		}          	          	
-          	}
-        }).redraw();
-    });
+	try {
+		alert(ret.uri);
+		$.getJSON(ret.uri, function(response) {
+			try {
+				var datalist = new Array();
+				for (var i = 0; i < response['data'].length; ++i) {
+					datalist.push(response['data'][i]['data']);
+				}
+				var labels = getLabel(response['data']);
+				var maxDataPoint = getMaxDataPoint(response['data']);
+				var maxYAxis = getAxisMax(maxDataPoint);
+				var jqplotConf = {
+		   			seriesDefaults: {showMarker:false, showLabel: true},
+		   			series: labels, 
+		   		 	cursor: {
+		        		show: true,
+		        		tooltipLocation:'sw', 
+		        		zoom:true
+		      		}, 
+		      		legend: {
+		      			show: true
+		      		},
+		      		highlighter: {
+		        		show: true,
+		        		sizeAdjust: 7.5
+		      		},      		
+		          	axes: {
+		          		xaxis: { 
+		          			renderer: $.jqplot.DateAxisRenderer,
+		          			tickOptions:{formatString:'%H:%M:%S'},
+		          			label: 'Time',
+		          			min: startTime,
+		          			max: endTime 
+		          		},
+		          		yaxis: {
+		          			min: 0,
+		          			max: maxYAxis,
+		          			label: MetricYLabel[conf.metric],
+		          			labelRenderer: $.jqplot.CanvasAxisLabelRenderer,
+		          			autoscale: true,
+		          			tickOptions: {formatter: unitFormatter}
+		          		}          	          	
+		          	}
+		       };
+		       
+		       $.jqplot(plotdiv, datalist, jqplotConf).redraw();
+		   } catch (err) {
+		   		alert(err.name + ":"+ err.message);
+		      	alert("There is no mrjob running in the node.");
+		   }
+	    }).error(function() { alert("Failed to fetch data from the server"); });
+	} catch (err) {
+		alert("Failed to fetch data from the server");
+	}
 }
