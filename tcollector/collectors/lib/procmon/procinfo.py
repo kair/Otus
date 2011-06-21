@@ -30,7 +30,7 @@ def getPPidAndUid(pid):
   return (ppid, uid)
 
 class ProcInfoStat:
-  SIZE = 4 #1
+  SIZE = 4
   INDEX = [13, 14]
 
   def __init__(self):
@@ -50,15 +50,6 @@ class ProcInfoStat:
 
   def naming(self):
     return ["cpu_user_time", "cpu_system_time", "cpu_user", "cpu_system"]
-#    return ["cpu_usage"]
-
-  def names(self):
-    return [ "procmon.CPUTime", "procmon.CPUTime", "procmon.CPU", "procmon.CPU"]
-#    return ["procmon.CPU"]
-
-  def types(self):
-    return ["type=user", "type=system", "type=user", "type=system"]
-#    return [""]
 
   def update(self, pid, met, intv):
     try:
@@ -69,7 +60,6 @@ class ProcInfoStat:
       sys.stderr.write(str(e))
       return
     items = line.split()
-#    met[0] = (float(items[13])+float(items[14])) / self.numP
     i = 0
     for ind in ProcInfoStat.INDEX:
       newmet = float(items[ind]) / self.numP
@@ -89,13 +79,6 @@ class ProcInfoIO:
   def naming(self):
     return ["readbytes", "writebytes", "canwritebytes", \
             "readbytesrate", "writebytesrate", "canwritebytesrate"]
-
-  def names(self):
-    return ['procmon.DiskRead', 'procmon.DiskWrite', 'procmon.DiskCancelWrite',\
-            'procmon.DiskReadRate', 'procmon.DiskWriteRate', 'procmon.DiskCancelWriteRate'] 
-
-  def types(self):
-    return ['','','','','','']
 
   def update(self, pid, met, intv):
     try:
@@ -122,12 +105,6 @@ class ProcInfoStatus:
   def naming(self):
     return ["vmsize", "vmrss"]
 
-  def names(self):
-    return ['procmon.VirtualMem', 'procmon.ResidentMem']
-
-  def types(self):
-    return ['', '']
-
   def update(self, pid, met, intv):
     try:
       f = open(PATH.PROCPID_STATUS%(pid), 'r');
@@ -136,6 +113,8 @@ class ProcInfoStatus:
     except Exception, e:
       sys.stderr.write(str(e))
       return
+    met[0] = 0
+    met[1] = 0
     for line in lines:
       items = line.split()
       if items[0].startswith("VmSize"):

@@ -31,39 +31,53 @@ function genMetricQuery(metric, tags, conf) {
 }
 
 function procClusterView(metric, procname, conf) {
-	return genMetricQuery("procmon."+metric, {proc: procname}, conf);
+	return genMetricQuery("process."+metric, {proc: procname}, conf);
 }
 
 function totClusterView(metric, conf) {
-	return genMetricQuery("procmon."+metric, {proc: "Node.Total"}, conf);
+	return genMetricQuery("node."+metric, {}, conf);
+}
+
+function totJobClusterView(metric, conf) {
+	return genMetricQuery("mrjob."+metric, {}, conf);
 }
 
 function jobClusterView(metric, _jobid, conf) {
 	return genMetricQuery("mrjob."+metric, {jobid: _jobid}, conf);
 }
 
-function jobTotalClusterView(metric, conf) {
-	return genMetricQuery("mrjob."+metric, {}, conf);
-}
-
 function procNodeView(metric, hostid, procname, conf) {
-	return genMetricQuery("procmon."+metric, {proc: procname, host:hostid}, conf);
+	return genMetricQuery("process."+metric, {proc: procname, host:hostid}, conf);
 }
 
 function totNodeView(metric, hostid, conf) {
-	return genMetricQuery("procmon."+metric, {proc: "Node.Total", host:hostid}, conf);
+	return genMetricQuery("node."+metric, {host:hostid}, conf);
 }
 
 function jobNodeView(metric, hostid, _jobid, conf) {
-	return genMetricQuery("procmon."+metric, {jobid: _jobid, host:hostid, tasktype: typevalue}, conf);
+	return genMetricQuery("mrjob."+metric, {jobid: _jobid, host:hostid}, conf);
+}
+
+function slotsNodeView(metric, hostid, _jobid, conf) {
+	var slots = new Array();
+	for (var i = 0; i < NumMapper; ++i)
+		slots.push("m"+i);
+	for (var i = 0; i < NumReducer; ++i)
+		slots.push("r"+i);
+	var typevalue = getArrayToORString(slots);
+	return genMetricQuery("mrjob."+metric, {jobid: _jobid, host:hostid, tasktype: typevalue}, conf);
+}
+
+function totJobNodeView(metric, hostid, conf) {
+	return genMetricQuery("mrjob."+metric, {host: hostid}, conf);
 }
 
 function getOpenTSDBURL() {
-	return "http://localhost:4242";
+	return QueryURL;
 }
 
 function genQuery(startTime, endTime, metricQueries, callback) {
-	query = getOpenTSDBURL()+"/q?start="+startTime+"&end="+endTime+"&ascii&injson";
+	query = getOpenTSDBURL()+"start="+startTime+"&end="+endTime+"&ascii&injson";
 	for (var i = 0; i < metricQueries.length; ++i) {
 		query += "&"+metricQueries[i];
 	}
@@ -74,37 +88,108 @@ function genQuery(startTime, endTime, metricQueries, callback) {
 function getClusterView(startTime, endTime, conf) {
 	var queries = new Array();
 	queries.push(totClusterView(conf.metric, conf));
-	for (var i = 0; i < conf.proclist.length; ++i) {
-		queries.push(procClusterView(conf.metric, conf.proclist[i], conf));
+	queries.push(totJobClusterView(conf.metric, conf));
+	var procname = getArrayToORString(conf.proclist);
+	if (procname != null) {
+		queries.push(procClusterView(conf.metric, procname, conf));
 	}
-	for (var i = 0; i < conf.joblist.length; ++i) {
-		queries.push(jobClusterView(conf.metric, conf.joblist[i], conf));
+	var jobname = getArrayToORString(conf.joblist);
+	if (jobname != null) {
+		queries.push(jobClusterView(conf.metric, jobname, conf));
 	}
-	return genQuery(startTime, endTime, queries);
+	ret = new Object();
+	ret.uri = genQuery(startTime, endTime, queries);
+	return ret;
 }
 
 function getNodeView(startTime, endTime, conf) {
 	var queries = new Array();
+	var labels = new Array();
 	queries.push(totNodeView(conf.metric, conf.hostid, conf));
-	for (var i = 0; i < conf.proclist.length; ++i) {
-		queries.push(procNodeView(conf.metric, conf.hostid, conf.proclist[i], conf));
+	queries.push(totJobNodeView(conf.metric, conf.hostid, conf));
+	var procname = getArrayToORString(conf.proclist);
+	if (procname != null) {
+		queries.push(procNodeView(conf.metric, conf.hostid, procname, conf));
 	}
-	for (var i = 0; i < conf.joblist.length; ++i) {
-		queries.push(jobNodeView(conf.metric, conf.hostid, conf.joblist[i], conf));
+	var jobname = getArrayToORString(conf.joblist);
+	if (jobname != null) {
+		queries.push(jobNodeView(conf.metric, conf.hostid, jobname, conf));
+		queries.push(slotsNodeView(conf.metric, conf.hostid, jobname, conf));		
 	}
-	return genQuery(startTime, endTime, queries);
+	ret = new Object();
+	ret.uri = genQuery(startTime, endTime, queries);
+	return ret;
+}
+
+function getLabel(data) {
+	var labels = new Array();
+	for (var i = 0; i < data.length; ++i) {
+		if (data[i]['metric'].indexOf("node") >= 0) {
+			labels.push({label:"Total"});
+		} else
+		if (data[i]['metric'].indexOf("process") >= 0) {
+			var procname = data[i]['tags']['proc'];
+			if (procname == null) {
+				labels.push({label: "TotalProcess"});
+			} else {
+				labels.push({label: procname});
+			}
+		} else
+		if (data[i]['metric'].indexOf("mrjob") >= 0) {
+			var jobid = data[i]['tags']['jobid'];
+			if (jobid == null) {
+				labels.push({label: "TotalMRJob"});
+			} else {
+				var tasktype = data[i]['tags']['tasktype'];
+				if (tasktype == null) {
+					labels.push({label: jobid});
+				} else {
+					labels.push({label: jobid+"_"+tasktype});
+				}
+			}
+		} else {
+			labels.push("unknown");
+		}
+	}
+	return labels;
 }
 
 function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
-	var uri = genViewFun(startTime, endTime, conf);
-	$.getJSON(uri, function(data) {
-        $.plot($(plotdiv), [ data[0]['data'], data[1]['data'] , data[2]['data'],
-                data[3]['data'] ], {
-            series: {
-            stack: false,
-            lines: { show: true, fill: true, steps: false},
-          },
-          xaxis: { mode: "time"}
-        })
+	var ret = genViewFun(startTime, endTime, conf);
+	alert(ret.uri);
+	$.getJSON(ret.uri, function(response) {
+		var datalist = new Array();
+		for (var i = 0; i < response['data'].length; ++i) {
+			datalist.push(response['data'][i]['data']);
+		}
+		var labels = getLabel(response['data']);
+        $.jqplot(plotdiv, datalist, {
+   			seriesDefaults: {showMarker:false, showLabel: true},
+   			series: labels, 
+   		 	cursor: {
+        		show: true,
+        		tooltipLocation:'sw', 
+        		zoom:true
+      		}, 
+      		legend: {
+      			show: true
+      		},
+      		highlighter: {
+        		show: true,
+        		sizeAdjust: 7.5
+      		},      		
+          	axes: {
+          		xaxis: { 
+          			renderer: $.jqplot.DateAxisRenderer,
+          			tickOptions:{formatString:'%H:%M:%S'},
+          			min: startTime,
+          			max: endTime 
+          		},
+          		yaxis: {
+          			min: 0,
+          			autoscale: true
+          		}          	          	
+          	}
+        }).redraw();
     });
 }

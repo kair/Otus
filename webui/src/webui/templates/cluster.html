@@ -3,55 +3,51 @@
  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>Otus Monitoring Tool</title>
-    <link rel="stylesheet" type="text/css" href="../lib/css/jquery.ui.css" />    
+    <link rel="stylesheet" type="text/css" href="../lib/css/jquery.ui.css"/>
+    <link rel="stylesheet" type="text/css" href="../lib/css/jquery.jqplot.min.css"/>    
     <link rel="stylesheet" type="text/css" href="../lib/jcalendar/css/jscal2.css" />
     <link rel="stylesheet" type="text/css" href="../lib/jcalendar/css/border-radius.css" />
     <!--[if lte IE 8]><script language="javascript" type="text/javascript" src="../excanvas.min.js"></script><![endif]-->
     <script language="javascript" type="text/javascript" src="../lib/jquery/jquery.js"></script>
-    <script language="javascript" type="text/javascript" src="../lib/jquery/jquery.flot.js"></script>
+    <script language="javascript" type="text/javascript" src="../lib/jquery/jquery.jqplot.js"></script>
     <script language="javascript" type="text/javascript" src="../lib/jquery/jquery.ui.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.cursor.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.dateAxisRenderer.min.js"></script>
+	<script type="text/javascript" src="../lib/jquery/plugins/jqplot.highlighter.min.js"></script>
     <script language="javascript" type="text/javascript" src="../lib/jcalendar/js/jscal2.js"></script>
 	<script language="javascript" type="text/javascript" src="../lib/jcalendar/js/lang/en.js"></script>
+	<script language="javascript" type="text/javascript" src="../lib/tsd/configuration.js"></script> 	
+  	<script language="javascript" type="text/javascript" src="../lib/tsd/util.js"></script> 	
  	<script language="javascript" type="text/javascript" src="../lib/tsd/query.js"></script>
- 	<script language="javascript" type="text/javascript" src="../lib/tsd/global.js"></script> 	
  </head>
  <body>
  	<div>
-    Time Range From <input size="20" id="cs" name="cs" value={{ cs }}/><button id="cs_btn" type="button">...</button>
-    To   <input size="20" id="ce" name="ce" value={{ ce }}/><button id="ce_btn" type="button">...</button>
+    <h1>Cluster Overview</h1>
+ 		
+    Time Range From <input size="20" id="cs" name="cs" value="2011/06/20-17:00:00"/><button id="cs_btn" type="button">...</button>
+    To   <input size="20" id="ce" name="ce" value="2011/06/20-17:20:00"/><button id="ce_btn" type="button">...</button>
     <script type="text/javascript">//<![CDATA[
        var cal = Calendar.setup({
           onSelect: function(cal) { cal.hide() },
           showTime: true,
           minuteStep: 1
       });
-      cal.manageFields("cs_btn", "cs", "%b %d %Y %H:%M");
-      cal.manageFields("ce_btn", "ce", "%b %d %Y %H:%M");
+      cal.manageFields("cs_btn", "cs", "%Y/%m/%d-%H:%M:%S");
+      cal.manageFields("ce_btn", "ce", "%Y/%m/%d-%H:%M:%S");
     //]]></script>
     <br>
-    Metric Name <input type="text" size="20" id="metric" name="metric"/>
+    Metric Name <input type="text" size="20" id="metric" name="metric" value="cpu_user"/>
     MapReduce Job ID <input type="text" size="20" id="mrjobid" name="mrjobid"/>
-	<button type="button" onclick=freshTime()> Go </button>
+	<button type="button" onclick=freshAll()> Go </button>
 	</div>
-	     	
-    <h1>Cluster Overview</h1>
-
-    <div id="clusterview" style="font-size:150%;width:800px;height:300px;"></div>
+    <div id="clusterview" style="font-size:150%;width:800px;height:600px;"></div>
     
     <script type="text/javascript">
-    	function freshTime() {
-    		$("#test_area").html($("#cs").val()+$("#ce").val());
-    	}
-    	
     	// Initialize jobid suggestion
 
     	$("#metric").autocomplete( {
     		delay: 100,
-    		source: function(request, response) {
-    			$.getJSON(SuggestURL+"&term="+request.term+"&callback=?", function(data) {
-    				response(data);	
-    			});
-    		}
+    		source: ["cpu_user", "cpu_system", "vmrss", "vmsize", "readbytesrate", "writebytesrate"]
     	});
     	
     	$("#mrjobid").autocomplete( {
@@ -64,15 +60,25 @@
     	});
     	
     	// Initialize cluster view
-    	var conf = new Object();
-    	conf.metric = "cpu_user_time";
+		var conf = new Object();
+    	conf.metric = "cpu_user";
     	conf.aggfunc = "sum";
     	conf.isRate = false;
     	conf.downSampe = null;
-    	conf.proclist = [];
+    	conf.proclist = ["DataNode", "TaskTracker"];
     	conf.joblist = [];
-    	renderView($("#cs").val(), $("#ce").val(), getClusterView, conf, "#clusterview");
+    	renderView($("#cs").val(), $("#ce").val(), getClusterView, conf, "clusterview");
     	
+    	function freshAll() {
+    		conf.metric = $("#metric").val();
+    		var jobid = $("#mrjobid").val();
+    		if (jobid != null && jobid != "") {
+    			conf.joblist = [$("#mrjobid").val()];
+    		} else {
+    			conf.joblist = [];
+    		}   		
+	   		renderView($("#cs").val(), $("#ce").val(), getClusterView, conf, "clusterview");    		
+    	}
     </script>
  </body>
 </html>

@@ -27,17 +27,13 @@ class MyHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
     print queryName
 
     if (queryName == '/q'):
-      f = open("./data1.json", "r")
+      f = open("./data3.json", "r")
       text = ''
       for l in f:
         text += l
       f.close()
 
-      data = json.loads(text)
-      for arr in data:
-        for item in arr['data']:
-          item[0] = item[0]*1000
-      body = json.dumps(data)
+      body = text
     else:
       body = '["a", "b", "c"]' 
 

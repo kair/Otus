@@ -105,8 +105,8 @@ class SubtreeMatcher:
       for j in range(0, len(self.modules)):
         module = self.modules[j]
         for k in range(0, module.size()):
-          name = module.naming()[k]
-          types = "proc=%s %s "%(self.rules[i][self.RULE_IND_NAME])
+          name = "process.%s" % (module.naming()[k])
+          types = "proc=%s"%(self.rules[i][self.RULE_IND_NAME])
           value = self.results[i].get(j, k)
           reporter.report(name, timestamp, value, types)
 
@@ -170,7 +170,7 @@ class MRManager:
           self.tasks.append(updateList[j])
         self.nactive += 1
 
-  def report(self, modules, host, timestamp, reporter):
+  def report(self, modules, timestamp, reporter):
     for i in range(self.nactive):
       if self.tasks[i][0] != '':
         taskid = self.tasks[i][0]
@@ -179,9 +179,9 @@ class MRManager:
         for j in range(0, len(modules)):
           module = modules[j]
           for k in range(0, module.size()):
-            name = "mrtask.%s" % (module.naming()[k])
-            types = "jobid=%s tasktype=%s%d taskid=%s " \
-                %(taskid[0:17], host, self.taskType, i, taskid[20:29])
+            name = "mrjob.%s" % (module.naming()[k])
+            types = "jobid=%s tasktype=%s%d taskid=%s" \
+                %(taskid[0:17], self.taskType, i, taskid[20:29])
             value = agg.get(j, k)
             reporter.report(name, timestamp, value, types)
 
@@ -266,7 +266,7 @@ class MapReduceMatcher(SubtreeMatcher):
 
   def report(self, timestamp, reporter):
     for manager in self.managers:
-      manager.report(self.modules, self.host, timestamp, reporter)
+      manager.report(self.modules, timestamp, reporter)
 
   def listMetricName(self):
     names = []
@@ -274,7 +274,7 @@ class MapReduceMatcher(SubtreeMatcher):
       for j in range(0, len(self.modules)):
         module = self.modules[j]
         for k in range(0, module.size()):
-          name = "mrtask.%s"%(module.naming()[k])
+          name = "mrjob.%s"%(module.naming()[k])
           names.append(str(name))
     return names
 
@@ -305,10 +305,9 @@ class SumMatcher:
     for i in range(0, len(self.modules)):
       module = self.modules[i]
       for j in range(0, module.size()):
-        name = module.names()[j]
+        name = "node.%s" % (module.naming()[j])
         value= self.metrics.get(i, j)
-        reporter.report(name, timestamp, value, \
-          "proc=Node.Total %s"%(module.types()[j]))
+        reporter.report(name, timestamp, value, "")
 
   def endGroup(self):
     pass
@@ -318,7 +317,7 @@ class SumMatcher:
     for i in range(0, len(self.modules)):
       module = self.modules[i]
       for j in range(0, module.size()):
-        name = "node.Total.%s"%(module.names()[j])
+        name = "node.%s"%(module.naming()[j])
         names.append(name)
     return names
 
