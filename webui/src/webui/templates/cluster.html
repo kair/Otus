@@ -67,7 +67,7 @@
     	conf.aggfunc = "sum";
     	conf.isRate = false;
     	conf.downSampe = null;
-    	conf.proclist = ["DataNode", "TaskTracker"];
+    	conf.proclist = ProcessList;
     	conf.joblist = [];
     	renderView($("#cs").val(), $("#ce").val(), getClusterView, conf, "clusterview");
     	
