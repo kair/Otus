@@ -121,6 +121,18 @@ function getNodeView(startTime, endTime, conf) {
 	return ret;
 }
 
+function getCustomizedView(startTime, endTime, conf) {
+	ret = new Object();	
+	ret.uri = genQuery(startTime, endTime, conf.queries);
+	return ret;
+}
+
+function getDashboardView(startTime, endTime, conf) {
+	ret = new Object();
+	ret.uri = getOpenTSDBURL()+"start="+startTime+"&end="+endTime+"&ascii&injson&"+conf.query+"&callback=?";
+	return ret;
+}
+
 function getLabel(data) {
 	var labels = new Array();
 	for (var i = 0; i < data.length; ++i) {
@@ -191,6 +203,7 @@ function unitFormatter(format, val) {
 
 function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
 	var ret = genViewFun(startTime, endTime, conf);
+	alert(ret.uri);
 	try {
 		$.getJSON(ret.uri, function(response) {
 			try {

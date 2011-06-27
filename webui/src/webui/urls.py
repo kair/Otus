@@ -7,5 +7,6 @@ from django.conf import settings
 
 urlpatterns = patterns('',
     (r'^media/(?P<path>.*)', 'django.views.static.serve', {'document_root': settings.MEDIA_ROOT}),
+    (r'^otus/dashboard/(?P<dashboardname>.*)$', 'webui.otus.views.indexDashboard'),                           
     (r'^otus/(?P<view_id>.*)$', 'webui.otus.views.index'),                           
 )
