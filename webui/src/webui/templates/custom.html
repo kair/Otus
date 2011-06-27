@@ -84,12 +84,35 @@
 				conf.queries = getQueries("");
 				alert(getCustomizedView($("#customview-cs").val(), $("#customview-ce").val(), conf).uri);
 			});
+
+		var $addGraphDialog = $( "#addGraphDialog" ).dialog({
+			autoOpen: false,
+			modal: true,
+			buttons: {
+				Add: function() {
+					$addGraphDialog.dialog("close");						
+					addGraphToDashboard();
+				},
+				Cancel: function() {
+					$addGraphDialog.dialog("close");
+				}
+			},
+			open: function() {
+				$("#targetdashboard").focus();
+			}
+		});
+
+		function addGraphToDashboard() {
+			setGraphToDashboard($("#targetdashboard").val(), $("#targetgraph").val(), getQueries(""));
+			if (handleDashboardToReload != null) {
+				handleDashboardToReload($("#targetdashboard").val());
+			}
+		};
 			
 		$( "#addtodashboard" )
 			.button()
 			.click(function() {
-				var conf = new Object();
-				conf.queries = getQueries("");
+				$addGraphDialog.dialog( "open" );
 			});		
 	});
  	</script>
@@ -124,6 +147,14 @@
 	<button id="addMetric"><span class="ui-button-text">Add Metric</span></button>		
 	<button id="load"><span class="ui-button-text">Load</span></button>
 	<button id="testurl"><span class="ui-button-text">URL</span></button>
+	<div id="addGraphDialog" title="Add Graph To Dashboard"> 
+			<fieldset class="ui-helper-reset"> 
+				<label for="targetdashboard">Dashboard Name</label> 
+				<input type="text" name="targetdashboard" id="targetdashboard" value="" class="ui-widget-content ui-corner-all" />
+				<label for="targetgraph">Graph Name</label> 
+				<input type="text" name="targetgraph" id="targetgraph" value="" class="ui-widget-content ui-corner-all" /> 				 
+			</fieldset> 
+	</div> 
 	<button id="addtodashboard"><span class="ui-button-text">AddToDashboard</span></button>	
 	<div id="customview" style="font-size:150%;width:800px;height:600px;"></div>
  </body>

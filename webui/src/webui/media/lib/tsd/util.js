@@ -8,7 +8,7 @@ function getArrayToORString(strarray) {
 		ret += "|" + strarray[i];
 	}
 	return ret;
-}
+};
 
 function getObjStrValue(id, initVal) {
 	var val = $(id).val();
@@ -17,4 +17,7 @@ function getObjStrValue(id, initVal) {
 	} else {
 		return val;
 	}
-}
+};
+
+var registerDashboardToReload = null;
+

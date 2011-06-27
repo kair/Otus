@@ -31,7 +31,7 @@
 				tabTemplate: "<li><a href='#{href}'>#{label}</a> <span class='ui-icon ui-icon-close'>Remove Tab</span></li>",
 				add: function( event, ui ) {
 					mainTab.tabs('select', '#' + ui.panel.id);					
-				}			 				
+				}
  			});
  			
 			var $addTabDialog = $( "#addTabDialog" ).dialog({
@@ -50,22 +50,52 @@
 					$("#newdashboard").focus();
 				}
 			});
-			
+
+			$( "#mainTab span.add" ).live( "click", function() {
+				$addTabDialog.dialog( "open" );
+ 			});
+
+			var tabName = new Array("Query", "ClusterView", "NodeView");
 			function addTab() {
 				var dashboardName = $("#newdashboard").val();
 				var pos = mainTab.tabs("length");
+				if (pos < tabName.length) {
+					tabName[pos] = dashboardName;
+				} else {
+					tabName.push(dashboardName);
+				}
 				mainTab.tabs("add", "dashboard/"+dashboardName, dashboardName, pos-1);
 			};
+			
+			function setTabToReload(dashboardname) {
+				for (var i = 0; i < tabName.length; ++i)
+					if (tabName[i] == dashboardname) {
+						if (i < mainTab.tabs("length")) {
+							mainTab.tabs("select", i);
+							mainTab.tabs("load", i);	
+						}						
+					}
+			};
+			
+			handleDashboardToReload = setTabToReload;
+
+			function reloadTab() {
+				var index = mainTab.tabs("option", "selected");
+				mainTab.tabs("load", index);				
+			};
+			
+			/*
+			$( "#reload" )
+			.button()
+			.click(function() {
+				reloadTab();
+			});
+			*/
 			
 			$( "#mainTab span.ui-icon-close" ).live( "click", function() {
 				var index = $( "li", mainTab).index( $( this ).parent() );
 				mainTab.tabs("remove", index);
- 			});
- 			
-			$( "#mainTab span.add" ).live( "click", function() {
-				$addTabDialog.dialog( "open" );
- 			});
- 			
+ 			}); 			
  		}); 			
  	</script>
  	
@@ -77,7 +107,6 @@
 				<input type="text" name="newdashboard" id="newdashboard" value="" class="ui-widget-content ui-corner-all" /> 
 			</fieldset> 
 	</div> 
-	 	
  	<div id = "mainTab">
  		<ul>
  			<li><a href="custom.html"><span>Query</span></a></li>         	

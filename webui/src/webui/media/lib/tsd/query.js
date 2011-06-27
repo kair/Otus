@@ -133,6 +133,21 @@ function getDashboardView(startTime, endTime, conf) {
 	return ret;
 }
 
+function setGraphToDashboard(dashboardName, graphName, queries) {
+	if (queries.length <= 0)
+		return;
+	var graphQuery = queries[0];
+	for (var i = 1; i < queries.length; ++i) {
+		graphQuery += "&"+queries[i];
+	}
+	$.get("update/", 
+		{dashboardname: dashboardName, graphname: graphName, graphquery: graphQuery},
+		function (data) {
+			alert("Add graph to "+dashboardName+" successfully.");
+		}
+	);
+}
+
 function getLabel(data) {
 	var labels = new Array();
 	for (var i = 0; i < data.length; ++i) {
@@ -203,7 +218,6 @@ function unitFormatter(format, val) {
 
 function renderView(startTime, endTime, genViewFun, conf, plotdiv) {
 	var ret = genViewFun(startTime, endTime, conf);
-	alert(ret.uri);
 	try {
 		$.getJSON(ret.uri, function(response) {
 			try {
