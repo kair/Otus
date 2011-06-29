@@ -165,9 +165,9 @@ class MRManager:
     for j in range(len(self.updateList)):
       if mark[j]:
         if self.nactive < len(self.tasks):
-          self.tasks[self.nactive] = updateList[j]
+          self.tasks[self.nactive] = self.updateList[j]
         else:
-          self.tasks.append(updateList[j])
+          self.tasks.append(self.updateList[j])
         self.nactive += 1
 
   def report(self, modules, timestamp, reporter):
